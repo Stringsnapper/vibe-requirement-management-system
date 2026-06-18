@@ -1,0 +1,63 @@
+name: CI
+
+# CI-0 (see CI-PLAN.md §4, §11): build, run tests (H2 in-memory — no external Postgres
+# needed today), and surface JUnit results on the PR. Quality gates (coverage, ktlint,
+# commitlint) and security scans arrive in CI-1 / CI-2.
+
+on:
+  pull_request:
+    branches: [development, main]
+  push:
+    branches: [development, main]
+
+# Cancel superseded runs on the same branch/PR to save minutes (CI-PLAN.md §9).
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least privilege by default; the build job elevates only to publish check results.
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build & test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write          # publish the JUnit check run
+      pull-requests: write    # annotate the PR with test results
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build and test
+        run: ./gradlew build --no-daemon --stacktrace
+
+      - name: Publish test results
+        uses: mikepenz/action-junit-report@v5
+        if: ${{ !cancelled() }}
+        with:
+          report_paths: build/test-results/test/*.xml
+          check_name: Test results
+          fail_on_failure: false   # the gradlew step already fails the job on test failure
+
+      - name: Upload test & build reports
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: test-reports-${{ github.sha }}
+          path: |
+            build/reports/tests/
+            build/test-results/
+          retention-days: 14
+          if-no-files-found: ignore

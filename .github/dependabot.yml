@@ -1,0 +1,37 @@
+# Automated dependency update PRs (CI-PLAN.md §6).
+# Two ecosystems: Gradle dependencies and the GitHub Actions used by the workflows.
+# Minor/patch updates are grouped to cut PR noise; majors stay separate for deliberate review.
+# Commit messages follow Conventional Commits (CLAUDE.md): build(deps) for Gradle, ci(deps)
+# for Actions, with the dependency scope appended automatically.
+version: 2
+
+updates:
+  - package-ecosystem: gradle
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      gradle-minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: ci
+      include: scope
+    groups:
+      actions-minor-and-patch:
+        update-types:
+          - minor
+          - patch
