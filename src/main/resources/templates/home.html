@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Dashboard — RMS')}"></head>
+<body>
+<header th:replace="~{fragments :: nav}"></header>
+<main class="container">
+    <p th:if="${message}" class="info" th:text="${message}"></p>
+
+    <section>
+        <h2>Projects</h2>
+        <ul class="pill-list">
+            <li th:each="p : ${projects}">
+                <span class="pill" th:text="${p.key}">KEY</span>
+                <span th:text="${p.name}">name</span>
+            </li>
+            <li th:if="${projects.isEmpty()}" class="muted">No projects yet.</li>
+        </ul>
+    </section>
+
+    <section>
+        <div class="section-head">
+            <h2>Items</h2>
+            <a class="btn" th:href="@{/items/new}">New item</a>
+        </div>
+        <table>
+            <thead>
+            <tr><th>Key</th><th>Type</th><th>Created</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="i : ${items}">
+                <td><a th:href="@{/items/{id}(id=${i.id})}" th:text="${i.humanKey}">KEY</a></td>
+                <td th:text="${i.type}">TYPE</td>
+                <td class="muted" th:text="${#temporals.format(i.createdAt, 'yyyy-MM-dd HH:mm')}">date</td>
+            </tr>
+            <tr th:if="${items.isEmpty()}"><td colspan="3" class="muted">No items yet.</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section>
+        <h2>Recent audit trail</h2>
+        <table>
+            <thead>
+            <tr><th>When</th><th>Entity</th><th>Action</th><th>Field</th><th>Old → New</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="a : ${recentAudit}">
+                <td class="muted" th:text="${#temporals.format(a.occurredAt, 'yyyy-MM-dd HH:mm:ss')}">when</td>
+                <td th:text="${a.entityType}">Entity</td>
+                <td><span class="tag" th:text="${a.action}">ACTION</span></td>
+                <td th:text="${a.field}">field</td>
+                <td class="muted">
+                    <span th:text="${a.oldValue}">old</span>
+                    <span th:if="${a.oldValue != null and a.newValue != null}"> → </span>
+                    <span th:text="${a.newValue}">new</span>
+                </td>
+            </tr>
+            <tr th:if="${recentAudit.isEmpty()}"><td colspan="5" class="muted">No audit entries yet.</td></tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+</body>
+</html>

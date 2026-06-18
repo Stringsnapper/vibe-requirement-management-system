@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${title}">RMS</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}"/>
+</head>
+<body>
+<header th:fragment="nav" class="nav">
+    <a class="brand" th:href="@{/}">Requirement Management System</a>
+    <nav>
+        <a th:href="@{/}">Dashboard</a>
+        <a th:href="@{/items/new}">New item</a>
+    </nav>
+    <form th:action="@{/logout}" method="post" class="logout">
+        <span sec:authentication="name">user</span>
+        <button type="submit">Sign out</button>
+    </form>
+</header>
+</body>
+</html>

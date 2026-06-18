@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: requirement-management-system
+  datasource:
+    url: ${RMS_DB_URL:jdbc:postgresql://localhost:5432/rms}
+    username: ${RMS_DB_USER:rms}
+    password: ${RMS_DB_PASSWORD:rms}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  thymeleaf:
+    cache: false
+
+server:
+  port: 8080
+  error:
+    whitelabel:
+      enabled: true
+
+logging:
+  level:
+    org.hibernate.SQL: info

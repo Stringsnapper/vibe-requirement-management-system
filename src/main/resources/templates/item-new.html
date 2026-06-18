@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('New item — RMS')}"></head>
+<body>
+<header th:replace="~{fragments :: nav}"></header>
+<main class="container">
+    <h2>Create a new item</h2>
+    <form th:action="@{/items}" method="post" class="card form">
+        <label>Project
+            <select name="projectId" required>
+                <option th:each="p : ${projects}" th:value="${p.id}" th:text="${p.key + ' — ' + p.name}">P</option>
+            </select>
+        </label>
+        <label>Type
+            <select name="type" required>
+                <option th:each="t : ${itemTypes}" th:value="${t}" th:text="${t}">TYPE</option>
+            </select>
+        </label>
+        <label>Component <span class="muted">(required for component-scoped types)</span>
+            <select name="componentId">
+                <option value="">— none —</option>
+                <option th:each="c : ${components}" th:value="${c.id}" th:text="${c.key + ' — ' + c.name}">C</option>
+            </select>
+        </label>
+        <label>Title
+            <input type="text" name="title" required/>
+        </label>
+        <label>Statement
+            <textarea name="statement" rows="4" required></textarea>
+        </label>
+        <label>Rationale <span class="muted">(optional)</span>
+            <textarea name="rationale" rows="2"></textarea>
+        </label>
+        <button type="submit">Create item</button>
+    </form>
+</main>
+</body>
+</html>

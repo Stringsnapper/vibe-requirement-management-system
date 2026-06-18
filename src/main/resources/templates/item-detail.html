@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Item — RMS')}"></head>
+<body>
+<header th:replace="~{fragments :: nav}"></header>
+<main class="container">
+    <p th:if="${message}" class="info" th:text="${message}"></p>
+
+    <h2 th:text="${item.humanKey}">KEY</h2>
+    <p class="muted" th:text="${item.type}">TYPE</p>
+
+    <section>
+        <h3>Revisions</h3>
+        <table>
+            <thead>
+            <tr><th>#</th><th>Status</th><th>Title</th><th>Statement</th><th>Current</th><th>Change reason</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="r : ${revisions}">
+                <td th:text="${r.revisionNo}">1</td>
+                <td><span class="tag" th:text="${r.lifecycleStatus}">DRAFT</span></td>
+                <td th:text="${r.title}">title</td>
+                <td th:text="${r.statement}">statement</td>
+                <td th:text="${r.isCurrent} ? '✓' : ''">✓</td>
+                <td class="muted" th:text="${r.changeReason}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section>
+        <h3>New revision</h3>
+        <form th:action="@{/items/{id}/revisions(id=${item.id})}" method="post" class="card form">
+            <label>Title
+                <input type="text" name="title" required/>
+            </label>
+            <label>Statement
+                <textarea name="statement" rows="3" required></textarea>
+            </label>
+            <label>Rationale <span class="muted">(optional)</span>
+                <textarea name="rationale" rows="2"></textarea>
+            </label>
+            <label>Change reason <span class="muted">(required)</span>
+                <input type="text" name="changeReason" required/>
+            </label>
+            <button type="submit">Create revision</button>
+        </form>
+    </section>
+
+    <section>
+        <h3>Audit trail for this item</h3>
+        <table>
+            <thead>
+            <tr><th>When</th><th>Action</th><th>Field</th><th>Old → New</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="a : ${auditEntries}">
+                <td class="muted" th:text="${#temporals.format(a.occurredAt, 'yyyy-MM-dd HH:mm:ss')}">when</td>
+                <td><span class="tag" th:text="${a.action}">ACTION</span></td>
+                <td th:text="${a.field}">field</td>
+                <td class="muted">
+                    <span th:text="${a.oldValue}">old</span>
+                    <span th:if="${a.oldValue != null and a.newValue != null}"> → </span>
+                    <span th:text="${a.newValue}">new</span>
+                </td>
+            </tr>
+            <tr th:if="${auditEntries.isEmpty()}"><td colspan="4" class="muted">No audit entries.</td></tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+</body>
+</html>
