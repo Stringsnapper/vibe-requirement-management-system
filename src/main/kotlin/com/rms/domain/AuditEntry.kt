@@ -18,35 +18,25 @@ import java.util.UUID
 class AuditEntry(
     @Id
     val id: UUID = UUID.randomUUID(),
-
     @Column(name = "entity_type", nullable = false)
     val entityType: String,
-
     @Column(name = "entity_id", nullable = false)
     val entityId: UUID,
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     val action: AuditAction,
-
     @Column(name = "actor_user_id")
     val actorUserId: UUID? = null,
-
     @Column(name = "occurred_at", nullable = false)
     val occurredAt: Instant = Instant.now(),
-
     @Column
     val field: String? = null,
-
     @Column(name = "old_value", columnDefinition = "text")
     val oldValue: String? = null,
-
     @Column(name = "new_value", columnDefinition = "text")
     val newValue: String? = null,
-
     @Column(columnDefinition = "text")
     val reason: String? = null,
-
     @Column(name = "session_ref")
     val sessionRef: String? = null,
 )

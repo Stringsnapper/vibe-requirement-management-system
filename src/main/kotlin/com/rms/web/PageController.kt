@@ -15,7 +15,6 @@ class PageController(
     private val audit: AuditEntryRepository,
     private val revisions: ItemRevisionRepository,
 ) {
-
     @GetMapping("/login")
     fun login() = "login"
 

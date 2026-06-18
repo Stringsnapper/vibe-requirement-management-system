@@ -16,16 +16,18 @@ class AppUserDetailsService(
     private val roleAssignments: RoleAssignmentRepository,
     private val roles: RoleRepository,
 ) : UserDetailsService {
-
     @Transactional(readOnly = true)
     override fun loadUserByUsername(username: String): UserDetails {
-        val user = users.findByUsername(username)
-            ?: throw UsernameNotFoundException("Unknown user: $username")
+        val user =
+            users.findByUsername(username)
+                ?: throw UsernameNotFoundException("Unknown user: $username")
 
-        val authorities = roleAssignments.findByUserId(user.id)
-            .mapNotNull { roles.findById(it.roleId).orElse(null) }
-            .map { SimpleGrantedAuthority("ROLE_${it.name.name}") }
-            .distinct()
+        val authorities =
+            roleAssignments
+                .findByUserId(user.id)
+                .mapNotNull { roles.findById(it.roleId).orElse(null) }
+                .map { SimpleGrantedAuthority("ROLE_${it.name.name}") }
+                .distinct()
 
         return AppUserPrincipal(
             userId = user.id,

@@ -25,8 +25,9 @@ data class AuditRecord(
  * does not trigger another flush — avoiding re-entrancy with the [AuditInterceptor].
  */
 @Component
-class AuditWriter(private val jdbc: JdbcTemplate) {
-
+class AuditWriter(
+    private val jdbc: JdbcTemplate,
+) {
     fun write(records: List<AuditRecord>) {
         if (records.isEmpty()) return
         jdbc.batchUpdate(

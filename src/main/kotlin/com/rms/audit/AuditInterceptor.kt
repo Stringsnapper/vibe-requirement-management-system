@@ -24,7 +24,6 @@ class AuditInterceptor(
     private val writerProvider: ObjectProvider<AuditWriter>,
     private val actorProvider: ObjectProvider<CurrentActor>,
 ) : Interceptor {
-
     private val buffer = ThreadLocal.withInitial { mutableListOf<AuditRecord>() }
 
     override fun onSave(
@@ -93,17 +92,22 @@ class AuditInterceptor(
         writerProvider.getObject().write(toWrite)
     }
 
-    private fun record(entity: Audited, action: AuditAction, field: String?, old: String?, new: String?) =
-        AuditRecord(
-            entityType = entity.javaClass.simpleName,
-            entityId = entity.auditId,
-            action = action,
-            actorUserId = currentActorId(),
-            occurredAt = Instant.now(),
-            field = field,
-            oldValue = old,
-            newValue = new,
-        )
+    private fun record(
+        entity: Audited,
+        action: AuditAction,
+        field: String?,
+        old: String?,
+        new: String?,
+    ) = AuditRecord(
+        entityType = entity.javaClass.simpleName,
+        entityId = entity.auditId,
+        action = action,
+        actorUserId = currentActorId(),
+        occurredAt = Instant.now(),
+        field = field,
+        oldValue = old,
+        newValue = new,
+    )
 
     private fun currentActorId(): UUID? = actorProvider.ifAvailable?.userId()
 }

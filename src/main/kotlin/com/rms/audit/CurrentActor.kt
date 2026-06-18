@@ -8,7 +8,6 @@ import java.util.UUID
 /** Resolves the authenticated user driving the current change, for the audit trail. */
 @Component
 class CurrentActor {
-
     fun userId(): UUID? {
         val auth = SecurityContextHolder.getContext().authentication ?: return null
         val principal = auth.principal

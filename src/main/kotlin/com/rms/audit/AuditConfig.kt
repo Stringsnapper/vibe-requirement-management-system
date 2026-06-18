@@ -9,8 +9,9 @@ import org.springframework.context.annotation.Configuration
  * invoked for every persistence operation across the application.
  */
 @Configuration
-class AuditConfig(private val auditInterceptor: AuditInterceptor) : HibernatePropertiesCustomizer {
-
+class AuditConfig(
+    private val auditInterceptor: AuditInterceptor,
+) : HibernatePropertiesCustomizer {
     override fun customize(hibernateProperties: MutableMap<String, Any>) {
         hibernateProperties[AvailableSettings.INTERCEPTOR] = auditInterceptor
     }

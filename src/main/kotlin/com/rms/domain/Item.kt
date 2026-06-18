@@ -19,30 +19,24 @@ import java.util.UUID
 class Item(
     @Id
     val id: UUID = UUID.randomUUID(),
-
     @Column(name = "project_id", nullable = false)
     val projectId: UUID,
-
     @Column(name = "component_id")
     val componentId: UUID? = null,
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     val type: ItemType,
-
     @Column(name = "human_key", nullable = false, unique = true)
     val humanKey: String,
-
     /** Points at the working / `is_current` revision. */
     @Column(name = "current_revision_id")
     var currentRevisionId: UUID? = null,
-
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
-
     @Column(name = "created_by")
     var createdBy: UUID? = null,
 ) : Audited {
     override val auditId: UUID get() = id
+
     override fun auditLabel() = "$humanKey [${type.name}]"
 }

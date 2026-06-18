@@ -16,10 +16,16 @@ class AppUserPrincipal(
     private val authorities: Collection<GrantedAuthority>,
 ) : UserDetails {
     override fun getAuthorities() = authorities
+
     override fun getPassword() = password
+
     override fun getUsername() = username
+
     override fun isAccountNonExpired() = true
+
     override fun isAccountNonLocked() = true
+
     override fun isCredentialsNonExpired() = true
+
     override fun isEnabled() = active
 }

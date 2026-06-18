@@ -15,30 +15,24 @@ import java.util.UUID
 class Project(
     @Id
     val id: UUID = UUID.randomUUID(),
-
     @Column(name = "`key`", nullable = false, unique = true)
     var key: String,
-
     @Column(nullable = false)
     var name: String,
-
     @Column(columnDefinition = "text")
     var description: String? = null,
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     var status: LifecycleState = LifecycleState.ACTIVE,
-
     @Enumerated(EnumType.STRING)
     @Column(name = "default_safety_class")
     var defaultSafetyClass: SafetyClass? = null,
-
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
-
     @Column(name = "created_by")
     var createdBy: UUID? = null,
 ) : Audited {
     override val auditId: UUID get() = id
+
     override fun auditLabel() = "Project $key ($name)"
 }
