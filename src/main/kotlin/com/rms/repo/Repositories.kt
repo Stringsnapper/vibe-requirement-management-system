@@ -10,6 +10,7 @@ import com.rms.domain.Project
 import com.rms.domain.Role
 import com.rms.domain.RoleAssignment
 import com.rms.domain.RoleName
+import com.rms.domain.TraceLink
 import org.springframework.data.jpa.repository.JpaRepository
 import java.util.UUID
 
@@ -27,6 +28,7 @@ interface RoleAssignmentRepository : JpaRepository<RoleAssignment, UUID> {
 
 interface ProjectRepository : JpaRepository<Project, UUID> {
     fun findByKey(key: String): Project?
+
     fun findAllByOrderByKeyAsc(): List<Project>
 }
 
@@ -36,15 +38,36 @@ interface ComponentRepository : JpaRepository<Component, UUID> {
 
 interface ItemRepository : JpaRepository<Item, UUID> {
     fun findByProjectIdOrderByHumanKeyAsc(projectId: UUID): List<Item>
-    fun countByProjectIdAndComponentIdAndType(projectId: UUID, componentId: UUID?, type: ItemType): Long
+
+    fun countByProjectIdAndComponentIdAndType(
+        projectId: UUID,
+        componentId: UUID?,
+        type: ItemType,
+    ): Long
+
     fun existsByHumanKey(humanKey: String): Boolean
 }
 
 interface ItemRevisionRepository : JpaRepository<ItemRevision, UUID> {
     fun findByItemIdOrderByRevisionNoAsc(itemId: UUID): List<ItemRevision>
+
+    fun findByItemIdAndIsCurrentTrue(itemId: UUID): ItemRevision?
+}
+
+interface TraceLinkRepository : JpaRepository<TraceLink, UUID> {
+    fun findBySourceRevisionIdIn(sourceRevisionIds: Collection<UUID>): List<TraceLink>
+
+    fun findByTargetRevisionIdIn(targetRevisionIds: Collection<UUID>): List<TraceLink>
+
+    fun existsBySourceRevisionIdAndTargetRevisionIdAndLinkType(
+        sourceRevisionId: UUID,
+        targetRevisionId: UUID,
+        linkType: com.rms.domain.LinkType,
+    ): Boolean
 }
 
 interface AuditEntryRepository : JpaRepository<AuditEntry, UUID> {
     fun findByEntityIdOrderByOccurredAtAsc(entityId: UUID): List<AuditEntry>
+
     fun findTop100ByOrderByOccurredAtDesc(): List<AuditEntry>
 }

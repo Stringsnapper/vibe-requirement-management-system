@@ -65,6 +65,11 @@ button:hover, .btn:hover { background: #1d4ed8; text-decoration: none; }
 }
 .tag { background: #eef1f5; color: var(--muted); border-radius: 4px; }
 
+.actions { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+button.secondary, .btn.secondary { background: #6b7785; }
+button.secondary:hover, .btn.secondary:hover { background: #55606c; }
+h4 { margin: 0.8rem 0 0.3rem; }
+
 .info { background: #e7f6ec; border: 1px solid #b6e0c2; color: #1d6b38; padding: 0.6rem 0.9rem; border-radius: 6px; }
 .error { background: #fdeaea; border: 1px solid #f3c0c0; color: #a02020; padding: 0.6rem 0.9rem; border-radius: 6px; }
 .hint { font-size: 0.85rem; color: var(--muted); }

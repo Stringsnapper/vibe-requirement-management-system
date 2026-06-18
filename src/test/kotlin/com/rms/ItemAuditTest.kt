@@ -4,6 +4,7 @@ import com.rms.domain.AuditAction
 import com.rms.domain.ItemType
 import com.rms.domain.LifecycleState
 import com.rms.domain.Project
+import com.rms.domain.UserNeedSource
 import com.rms.repo.AppUserRepository
 import com.rms.repo.AuditEntryRepository
 import com.rms.repo.ItemRevisionRepository
@@ -24,26 +25,31 @@ class ItemAuditTest(
     @Autowired private val revisions: ItemRevisionRepository,
     @Autowired private val audit: AuditEntryRepository,
 ) {
-
     @Test
     fun `creating and revising an item produces a versioned, audited record`() {
         val admin = users.findByUsername("admin")!!
-        val project = projects.save(
-            Project(key = "TST", name = "Test Project", status = LifecycleState.ACTIVE, createdBy = admin.id),
-        )
+        val project =
+            projects.save(
+                Project(key = "TST", name = "Test Project", status = LifecycleState.ACTIVE, createdBy = admin.id),
+            )
 
         // Create a versioned item.
-        val item = itemService.createItem(
-            ItemService.NewItem(
-                projectId = project.id,
-                type = ItemType.USER_NEED,
-                componentId = null,
-                title = "Clinician can review alarms",
-                statement = "The clinician shall be able to review all active alarms.",
-                rationale = "Clinical safety need.",
-                authorId = admin.id,
-            ),
-        )
+        val item =
+            itemService.createItem(
+                ItemService.NewItem(
+                    projectId = project.id,
+                    type = ItemType.USER_NEED,
+                    componentId = null,
+                    authorId = admin.id,
+                    content =
+                        ItemService.RevisionContent(
+                            title = "Clinician can review alarms",
+                            statement = "The clinician shall be able to review all active alarms.",
+                            rationale = "Clinical safety need.",
+                            userNeedSource = UserNeedSource.CLINICAL,
+                        ),
+                ),
+            )
 
         assertThat(item.humanKey).isEqualTo("TST-UN-001")
         assertThat(item.currentRevisionId).isNotNull()
@@ -51,9 +57,11 @@ class ItemAuditTest(
         // Spawn a second revision.
         itemService.createRevision(
             itemId = item.id,
-            title = "Clinician can review and acknowledge alarms",
-            statement = "The clinician shall be able to review and acknowledge all active alarms.",
-            rationale = "Clinical safety need.",
+            content =
+                ItemService.RevisionContent(
+                    title = "Clinician can review and acknowledge alarms",
+                    statement = "The clinician shall be able to review and acknowledge all active alarms.",
+                ),
             changeReason = "Added acknowledge capability after review.",
             authorId = admin.id,
         )

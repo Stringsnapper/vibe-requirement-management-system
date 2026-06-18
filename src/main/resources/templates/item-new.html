@@ -4,35 +4,75 @@
 <body>
 <header th:replace="~{fragments :: nav}"></header>
 <main class="container">
-    <h2>Create a new item</h2>
-    <form th:action="@{/items}" method="post" class="card form">
+    <h2>Create a new requirement item</h2>
+    <p class="muted">Pick a type — the form shows only the fields that type needs.</p>
+
+    <form th:action="@{/items}" method="post" class="card form" id="item-form">
         <label>Project
             <select name="projectId" required>
                 <option th:each="p : ${projects}" th:value="${p.id}" th:text="${p.key + ' — ' + p.name}">P</option>
             </select>
         </label>
         <label>Type
-            <select name="type" required>
+            <select name="type" id="type-select" required>
                 <option th:each="t : ${itemTypes}" th:value="${t}" th:text="${t}">TYPE</option>
             </select>
         </label>
-        <label>Component <span class="muted">(required for component-scoped types)</span>
+
+        <label class="type-field" data-types="SOFTWARE_REQUIREMENT">Component
             <select name="componentId">
                 <option value="">— none —</option>
                 <option th:each="c : ${components}" th:value="${c.id}" th:text="${c.key + ' — ' + c.name}">C</option>
             </select>
         </label>
+
         <label>Title
             <input type="text" name="title" required/>
         </label>
         <label>Statement
             <textarea name="statement" rows="4" required></textarea>
         </label>
+        <label>Acceptance criteria <span class="muted">(measurable, testable)</span>
+            <textarea name="acceptanceCriteria" rows="3"></textarea>
+        </label>
         <label>Rationale <span class="muted">(optional)</span>
             <textarea name="rationale" rows="2"></textarea>
         </label>
+
+        <label class="type-field" data-types="USER_NEED">Source
+            <select name="userNeedSource">
+                <option value="">— unspecified —</option>
+                <option th:each="s : ${userNeedSources}" th:value="${s}" th:text="${s}">S</option>
+            </select>
+        </label>
+        <label class="type-field" data-types="USER_NEED">Actor <span class="muted">(who has the need)</span>
+            <input type="text" name="userNeedActor"/>
+        </label>
+
+        <label class="type-field" data-types="SYSTEM_REQUIREMENT,SOFTWARE_REQUIREMENT">Category
+            <select name="category">
+                <option value="">— unspecified —</option>
+                <option th:each="c : ${categories}" th:value="${c}" th:text="${c}">C</option>
+            </select>
+        </label>
+        <label class="type-field" data-types="SYSTEM_REQUIREMENT,SOFTWARE_REQUIREMENT">Priority
+            <select name="priority">
+                <option value="">— unspecified —</option>
+                <option th:each="p : ${priorities}" th:value="${p}" th:text="${p}">P</option>
+            </select>
+        </label>
+
+        <label class="type-field" data-types="SOFTWARE_REQUIREMENT">
+            IEC 62304 software safety class
+            <select name="softwareSafetyClass">
+                <option value="">— unassigned —</option>
+                <option th:each="sc : ${safetyClasses}" th:value="${sc}" th:text="${sc}">A</option>
+            </select>
+        </label>
+
         <button type="submit">Create item</button>
     </form>
 </main>
+<script th:src="@{/js/app.js}"></script>
 </body>
 </html>

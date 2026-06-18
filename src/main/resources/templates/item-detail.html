@@ -1,26 +1,124 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{fragments :: head('Item — RMS')}"></head>
 <body>
 <header th:replace="~{fragments :: nav}"></header>
 <main class="container">
     <p th:if="${message}" class="info" th:text="${message}"></p>
+    <p th:if="${error}" class="error" th:text="${error}"></p>
 
-    <h2 th:text="${item.humanKey}">KEY</h2>
+    <div class="section-head">
+        <h2 th:text="${item.humanKey}">KEY</h2>
+        <span class="tag" th:if="${current}" th:text="${current.lifecycleStatus}">DRAFT</span>
+    </div>
     <p class="muted" th:text="${item.type}">TYPE</p>
 
+    <!-- Loud, specific gap warnings (PLAN §12) -->
+    <section th:if="${!gaps.isEmpty()}">
+        <div class="error">
+            <strong>Open gaps</strong>
+            <ul>
+                <li th:each="g : ${gaps}" th:text="${g}">gap</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Current revision content -->
+    <section th:if="${current}">
+        <h3>Current revision (rev <span th:text="${current.revisionNo}">1</span>)</h3>
+        <table>
+            <tbody>
+            <tr><th>Title</th><td th:text="${current.title}">t</td></tr>
+            <tr><th>Statement</th><td th:text="${current.statement}">s</td></tr>
+            <tr th:if="${current.acceptanceCriteria}"><th>Acceptance criteria</th><td th:text="${current.acceptanceCriteria}">a</td></tr>
+            <tr th:if="${current.rationale}"><th>Rationale</th><td th:text="${current.rationale}">r</td></tr>
+            <tr th:if="${current.userNeedSource}"><th>Source</th><td th:text="${current.userNeedSource}">src</td></tr>
+            <tr th:if="${current.userNeedActor}"><th>Actor</th><td th:text="${current.userNeedActor}">act</td></tr>
+            <tr th:if="${current.category}"><th>Category</th><td th:text="${current.category}">cat</td></tr>
+            <tr th:if="${current.priority}"><th>Priority</th><td th:text="${current.priority}">pri</td></tr>
+            <tr th:if="${current.softwareSafetyClass}"><th>Safety class</th><td th:text="${current.softwareSafetyClass}">B</td></tr>
+        </table>
+    </section>
+
+    <!-- Lifecycle actions, gated by status and role -->
+    <section th:if="${current}">
+        <h3>Lifecycle</h3>
+        <div class="actions">
+            <form th:if="${current.lifecycleStatus.name() == 'DRAFT'}" sec:authorize="hasAnyRole('AUTHOR','ADMIN')"
+                  th:action="@{/revisions/{r}/submit(r=${current.id})}" method="post">
+                <button type="submit">Submit for review</button>
+            </form>
+            <form th:if="${current.lifecycleStatus.name() == 'IN_REVIEW'}" sec:authorize="hasAnyRole('APPROVER','ADMIN')"
+                  th:action="@{/revisions/{r}/approve(r=${current.id})}" method="post">
+                <button type="submit">Approve &amp; freeze</button>
+            </form>
+            <form th:if="${current.lifecycleStatus.name() == 'IN_REVIEW'}" sec:authorize="hasAnyRole('REVIEWER','APPROVER','ADMIN')"
+                  th:action="@{/revisions/{r}/decline(r=${current.id})}" method="post">
+                <button type="submit" class="secondary">Decline</button>
+            </form>
+            <form th:if="${current.lifecycleStatus.name() == 'APPROVED'}" sec:authorize="hasAnyRole('APPROVER','ADMIN')"
+                  th:action="@{/revisions/{r}/deprecate(r=${current.id})}" method="post">
+                <button type="submit" class="secondary">Deprecate</button>
+            </form>
+            <form th:if="${current.lifecycleStatus.name() == 'DEPRECATED'}" sec:authorize="hasAnyRole('APPROVER','ADMIN')"
+                  th:action="@{/revisions/{r}/retire(r=${current.id})}" method="post">
+                <button type="submit" class="secondary">Retire</button>
+            </form>
+            <span class="muted" th:if="${current.frozen}">This revision is frozen — edit it by creating a new draft below.</span>
+        </div>
+    </section>
+
+    <!-- Local trace view (PLAN §12: make relationships obvious) -->
+    <section>
+        <h3>Traceability</h3>
+        <h4 class="muted">Upstream — this item</h4>
+        <ul class="pill-list">
+            <li th:each="l : ${trace.outgoing}">
+                <span class="tag" th:text="${l.linkType.label}">derives from</span>
+                <a th:href="@{/items/{id}(id=${l.otherItemId})}" th:text="${l.otherHumanKey}">KEY</a>
+                <span class="pill" th:if="${l.suspect}">suspect</span>
+            </li>
+            <li th:if="${trace.outgoing.isEmpty()}" class="muted">No upstream links.</li>
+        </ul>
+        <h4 class="muted">Downstream</h4>
+        <ul class="pill-list">
+            <li th:each="l : ${trace.incoming}">
+                <span class="tag" th:text="${l.linkType.inwardLabel}">derived into</span>
+                <a th:href="@{/items/{id}(id=${l.otherItemId})}" th:text="${l.otherHumanKey}">KEY</a>
+            </li>
+            <li th:if="${trace.incoming.isEmpty()}" class="muted">No downstream links.</li>
+        </ul>
+
+        <form th:if="${!linkCandidates.isEmpty()}" sec:authorize="hasAnyRole('AUTHOR','ADMIN')"
+              th:action="@{/items/{id}/links(id=${item.id})}" method="post" class="card form">
+            <h4>Add a "derives from" link to a parent</h4>
+            <input type="hidden" name="linkType" value="DERIVES_FROM"/>
+            <label>Parent
+                <select name="targetItemId" required>
+                    <option th:each="c : ${linkCandidates}" th:value="${c.id}" th:text="${c.humanKey}">KEY</option>
+                </select>
+            </label>
+            <label>Rationale <span class="muted">(optional)</span>
+                <input type="text" name="rationale"/>
+            </label>
+            <button type="submit">Link to parent</button>
+        </form>
+    </section>
+
+    <!-- Revisions -->
     <section>
         <h3>Revisions</h3>
         <table>
             <thead>
-            <tr><th>#</th><th>Status</th><th>Title</th><th>Statement</th><th>Current</th><th>Change reason</th></tr>
+            <tr><th>#</th><th>Status</th><th>Title</th><th>Frozen</th><th>Current</th><th>Change reason</th></tr>
             </thead>
             <tbody>
             <tr th:each="r : ${revisions}">
                 <td th:text="${r.revisionNo}">1</td>
                 <td><span class="tag" th:text="${r.lifecycleStatus}">DRAFT</span></td>
                 <td th:text="${r.title}">title</td>
-                <td th:text="${r.statement}">statement</td>
+                <td th:text="${r.frozen} ? '✓' : ''"></td>
                 <td th:text="${r.isCurrent} ? '✓' : ''">✓</td>
                 <td class="muted" th:text="${r.changeReason}"></td>
             </tr>
@@ -28,25 +126,27 @@
         </table>
     </section>
 
-    <section>
+    <!-- New revision (edit a frozen item by spawning a draft) -->
+    <section sec:authorize="hasAnyRole('AUTHOR','ADMIN')">
         <h3>New revision</h3>
         <form th:action="@{/items/{id}/revisions(id=${item.id})}" method="post" class="card form">
             <label>Title
-                <input type="text" name="title" required/>
+                <input type="text" name="title" th:value="${current != null ? current.title : ''}" required/>
             </label>
             <label>Statement
-                <textarea name="statement" rows="3" required></textarea>
+                <textarea name="statement" rows="3" required th:text="${current != null ? current.statement : ''}"></textarea>
             </label>
-            <label>Rationale <span class="muted">(optional)</span>
-                <textarea name="rationale" rows="2"></textarea>
+            <label>Acceptance criteria
+                <textarea name="acceptanceCriteria" rows="2" th:text="${current != null ? current.acceptanceCriteria : ''}"></textarea>
             </label>
             <label>Change reason <span class="muted">(required)</span>
                 <input type="text" name="changeReason" required/>
             </label>
-            <button type="submit">Create revision</button>
+            <button type="submit">Create draft revision</button>
         </form>
     </section>
 
+    <!-- Audit trail -->
     <section>
         <h3>Audit trail for this item</h3>
         <table>
