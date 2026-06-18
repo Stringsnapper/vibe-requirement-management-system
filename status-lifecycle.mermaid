@@ -1,0 +1,36 @@
+---
+title: Requirement status model — one governed lifecycle + three derived axes
+---
+stateDiagram-v2
+    direction LR
+
+    state "Lifecycle status (manual, role-gated, e-signed)" as Gov {
+        [*] --> Draft
+        Draft --> InReview : submit for review
+        InReview --> Approved : review passed<br/>(freezes this revision)
+        InReview --> Declined : review failed
+        Declined --> Draft : new revision
+        Approved --> Draft : edit<br/>(spawns new Draft revision)
+        Approved --> Deprecated : superseded /<br/>no longer applies
+        Deprecated --> Retired : removed from<br/>current product
+        Retired --> [*]
+    }
+
+    note right of Gov
+        Implementation, Verification and Release are
+        SEPARATE, derived axes — not points on this line.
+        A revision can be Approved while still
+        Not implemented / Unverified / Unreleased.
+
+        Implementation : Not implemented -> Implemented
+            (derived from a linked, approved design output)
+        Verification   : Unverified -> Verified / Failing / Stale
+            (derived from linked tests + latest executions)
+        Release        : Unreleased -> Released in Rx -> Deprecated in Ry
+            (derived from baseline membership; freezes on release)
+
+        RELEASE GUARDRAIL: a baseline cannot be released
+        unless every member is Approved + Verified
+        (normally Implemented too). Overriding needs a
+        signed, documented deviation.
+    end note

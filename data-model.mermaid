@@ -1,0 +1,119 @@
+erDiagram
+    PROJECT ||--o{ ITEM : contains
+    PROJECT ||--o{ COMPONENT : "decomposed into"
+    PROJECT ||--o{ BASELINE : has
+    COMPONENT ||--o{ ITEM : scopes
+    %% COMPONENT nests via parent_component_id (self-reference, shown as a field)
+    %% ITEM branches across products via forked_from_item_id (self-reference, shown as a field)
+
+    ITEM ||--o{ ITEM_VERSION : "has versions"
+    ITEM_VERSION ||--o{ TRACE_LINK : "source of"
+    ITEM_VERSION ||--o{ TRACE_LINK : "target of"
+
+    BASELINE ||--o{ BASELINE_ITEM : freezes
+    ITEM_VERSION ||--o{ BASELINE_ITEM : "pinned in"
+
+    USER_NEED }o--o{ SYSTEM_REQUIREMENT : derives_from
+    SYSTEM_REQUIREMENT }o--o{ SOFTWARE_REQUIREMENT : derives_from
+    SOFTWARE_REQUIREMENT }o--o{ DESIGN_SPEC : implemented_by
+    SOFTWARE_REQUIREMENT }o--o{ TEST_CASE : verified_by
+
+    TEST_CASE }o--o{ COMPOSITE_TEST : "member of"
+    COMPOSITE_TEST }o--o{ SOFTWARE_REQUIREMENT : verifies
+    TEST_CASE ||--o{ TEST_EXECUTION : "run as"
+    COMPOSITE_TEST ||--o{ TEST_EXECUTION : "run as"
+
+    HAZARD ||--o{ RISK : "source of"
+    RISK }o--o{ RISK_CONTROL : mitigated_by
+    RISK_CONTROL }o--o{ SOFTWARE_REQUIREMENT : implemented_as
+    RISK ||--o{ SFMEA_ENTRY : analyzed_in
+
+    USER ||--o{ AUDIT_ENTRY : performs
+    USER ||--o{ ELECTRONIC_SIGNATURE : signs
+    ITEM_VERSION ||--o{ ELECTRONIC_SIGNATURE : "signed on"
+    BASELINE ||--o{ ELECTRONIC_SIGNATURE : "signed on"
+    TEST_EXECUTION ||--o{ ELECTRONIC_SIGNATURE : "signed on"
+
+    COMPONENT {
+        uuid id PK
+        uuid project_id FK
+        string key "e.g. SENSOR"
+        string name
+        uuid parent_component_id FK
+        string safety_class "A|B|C"
+    }
+    ITEM {
+        uuid id PK
+        string type "UserNeed|SysReq|SRS|Design|TestCase|..."
+        string human_key "e.g. CGM-SENSOR-SRS-014"
+        uuid project_id FK
+        uuid component_id FK
+        uuid forked_from_item_id FK
+        uuid forked_from_revision_id FK
+    }
+    ITEM_VERSION {
+        uuid id PK
+        uuid item_id FK
+        int version_no
+        string status "Draft|InReview|Approved|Released|Obsolete"
+        text content
+        string software_safety_class "A|B|C (62304)"
+        string author
+        datetime created_at
+        text change_reason
+        bool is_current
+    }
+    TRACE_LINK {
+        uuid id PK
+        uuid source_version_id FK
+        uuid target_version_id FK
+        string link_type "derives_from|verifies|mitigates|implements"
+    }
+    BASELINE {
+        uuid id PK
+        string name "e.g. Release 1.1"
+        string status
+        datetime frozen_at
+    }
+    BASELINE_ITEM {
+        uuid baseline_id FK
+        uuid item_version_id FK
+    }
+    RISK {
+        uuid id PK
+        uuid hazard_id FK
+        text hazardous_situation
+        text harm
+        int severity
+        int probability
+        int residual_severity
+        int residual_probability
+    }
+    SFMEA_ENTRY {
+        uuid id PK
+        text failure_mode
+        text cause
+        text effect
+        int severity
+        int occurrence
+        int detection
+        int rpn
+        text recommended_action
+    }
+    TEST_EXECUTION {
+        uuid id PK
+        string result "Pass|Fail"
+        datetime executed_at
+        string executor
+        text evidence_ref
+        bool stale
+    }
+    AUDIT_ENTRY {
+        uuid id PK
+        string entity
+        string action
+        text old_value
+        text new_value
+        string reason
+        datetime at
+    }
