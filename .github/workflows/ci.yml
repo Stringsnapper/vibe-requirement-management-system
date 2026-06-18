@@ -1,8 +1,9 @@
 name: CI
 
-# CI-0 (see CI-PLAN.md §4, §11): build, run tests (H2 in-memory — no external Postgres
-# needed today), and surface JUnit results on the PR. Quality gates (coverage, ktlint,
-# commitlint) and security scans arrive in CI-1 / CI-2.
+# CI-1 (see CI-PLAN.md §4–§5, §11): build, run tests (H2 in-memory — no external Postgres
+# needed today), enforce ktlint and JaCoCo coverage floors (all wired into `./gradlew build`
+# via the `check` task), and lint commit messages for Conventional Commits. Security scans
+# (CodeQL, Trivy, dependency review) arrive in CI-2.
 
 on:
   pull_request:
@@ -15,13 +16,13 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-# Least privilege by default; the build job elevates only to publish check results.
+# Least privilege by default; jobs elevate only where needed.
 permissions:
   contents: read
 
 jobs:
   build:
-    name: Build & test
+    name: Build, test, lint & coverage
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -40,7 +41,8 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Build and test
+      # `build` runs tests, ktlintCheck and jacocoTestCoverageVerification via `check`.
+      - name: Build, test, lint & verify coverage
         run: ./gradlew build --no-daemon --stacktrace
 
       - name: Publish test results
@@ -51,13 +53,30 @@ jobs:
           check_name: Test results
           fail_on_failure: false   # the gradlew step already fails the job on test failure
 
-      - name: Upload test & build reports
+      - name: Upload test, coverage & lint reports
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: test-reports-${{ github.sha }}
+          name: reports-${{ github.sha }}
           path: |
             build/reports/tests/
             build/test-results/
+            build/reports/jacoco/
+            build/reports/ktlint/
           retention-days: 14
           if-no-files-found: ignore
+
+  commitlint:
+    name: Commit messages (Conventional Commits)
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' }}
+    steps:
+      - name: Checkout (full history for the commit range)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Lint PR commit messages
+        uses: wagoid/commitlint-github-action@v6
+        with:
+          configFile: .commitlintrc.yml

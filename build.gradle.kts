@@ -5,6 +5,8 @@ plugins {
     kotlin("plugin.jpa") version kotlinVersion
     id("org.springframework.boot") version "3.3.4"
     id("io.spring.dependency-management") version "1.1.6"
+    id("org.jlleitschuh.gradle.ktlint") version "12.1.1"
+    jacoco
 }
 
 group = "com.rms"
@@ -57,4 +59,77 @@ allOpen {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+// --- CI-1 quality gates (see CI-PLAN.md §5, §10.2) ---
+
+jacoco {
+    toolVersion = "0.8.12"
+}
+
+// Boilerplate excluded from the coverage denominator so the number is meaningful (§10.2):
+// the application entry point, the data initializer, and Spring config classes.
+val coverageExclusions =
+    listOf(
+        "com/rms/RmsApplicationKt.class",
+        "com/rms/RmsApplication.class",
+        "com/rms/bootstrap/**",
+        "**/*Config.class",
+    )
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    classDirectories.setFrom(
+        files(
+            classDirectories.files.map {
+                fileTree(it) { exclude(coverageExclusions) }
+            },
+        ),
+    )
+}
+
+tasks.jacocoTestCoverageVerification {
+    dependsOn(tasks.jacocoTestReport)
+    classDirectories.setFrom(
+        files(
+            classDirectories.files.map {
+                fileTree(it) { exclude(coverageExclusions) }
+            },
+        ),
+    )
+    violationRules {
+        // Whole-repo floor — modest on day one, ratcheted upward per phase (§10.2).
+        rule {
+            limit {
+                counter = "LINE"
+                minimum = "0.60".toBigDecimal()
+            }
+            limit {
+                counter = "BRANCH"
+                minimum = "0.45".toBigDecimal()
+            }
+        }
+        // Compliance-critical core held to a higher bar.
+        rule {
+            element = "PACKAGE"
+            includes = listOf("com.rms.domain", "com.rms.service", "com.rms.audit")
+            limit {
+                counter = "LINE"
+                minimum = "0.75".toBigDecimal()
+            }
+        }
+    }
+}
+
+tasks.check {
+    dependsOn(tasks.jacocoTestCoverageVerification)
+}
+
+ktlint {
+    version = "1.3.1"
 }

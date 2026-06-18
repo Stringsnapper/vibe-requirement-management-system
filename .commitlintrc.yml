@@ -1,0 +1,10 @@
+# Conventional Commits enforcement (CLAUDE.md, CI-PLAN.md §5). Validated in CI over every
+# commit in a pull request by wagoid/commitlint-github-action, which bundles commitlint and
+# @commitlint/config-conventional — no local npm install required.
+extends:
+  - "@commitlint/config-conventional"
+rules:
+  type-enum:
+    - 2
+    - always
+    - [feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert]
