@@ -54,7 +54,7 @@ jobs:
           fail_on_failure: false   # the gradlew step already fails the job on test failure
 
       - name: Upload test, coverage & lint reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
           name: reports-${{ github.sha }}
