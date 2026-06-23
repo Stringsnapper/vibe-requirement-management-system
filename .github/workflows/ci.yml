@@ -46,7 +46,7 @@ jobs:
         run: ./gradlew build --no-daemon --stacktrace
 
       - name: Publish test results
-        uses: mikepenz/action-junit-report@v5
+        uses: mikepenz/action-junit-report@v6
         if: ${{ !cancelled() }}
         with:
           report_paths: build/test-results/test/*.xml
