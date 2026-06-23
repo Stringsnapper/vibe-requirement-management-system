@@ -15,7 +15,12 @@ must follow `type(scope): subject`:
 - Breaking changes: add `!` after the type/scope (`feat(api)!:`) and/or a `BREAKING CHANGE:` footer.
 - Keep commits focused; one logical change per commit.
 
-This applies to **every** commit in this repository without exception.
+This applies to **every** commit in this repository, at all times, without exception — by
+every contributor and by Claude/AI agents alike. There is no situation (quick fix, WIP, docs-only,
+merge, revert, automated change) in which a non-conventional commit message is acceptable.
+Commits are preserved (no squash), so each commit message becomes permanent history and feeds
+automatic versioning and the changelog — `commitlint` enforces this in CI (see [CI-PLAN.md](CI-PLAN.md)).
+Before committing, verify the message matches `type(scope): subject` with an allowed type.
 
 ## Tech stack (see PLAN §8)
 
