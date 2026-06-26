@@ -52,12 +52,16 @@ interface ItemRevisionRepository : JpaRepository<ItemRevision, UUID> {
     fun findByItemIdOrderByRevisionNoAsc(itemId: UUID): List<ItemRevision>
 
     fun findByItemIdAndIsCurrentTrue(itemId: UUID): ItemRevision?
+
+    fun findByItemIdInAndIsCurrentTrue(itemIds: Collection<UUID>): List<ItemRevision>
 }
 
 interface TraceLinkRepository : JpaRepository<TraceLink, UUID> {
     fun findBySourceRevisionIdIn(sourceRevisionIds: Collection<UUID>): List<TraceLink>
 
     fun findByTargetRevisionIdIn(targetRevisionIds: Collection<UUID>): List<TraceLink>
+
+    fun findByProjectId(projectId: UUID): List<TraceLink>
 
     fun existsBySourceRevisionIdAndTargetRevisionIdAndLinkType(
         sourceRevisionId: UUID,

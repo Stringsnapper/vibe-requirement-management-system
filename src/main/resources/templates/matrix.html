@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Traceability matrix — RMS')}"></head>
+<body>
+<header th:replace="~{fragments :: nav}"></header>
+<main class="container container-wide">
+    <div class="section-head">
+        <h2 th:text="${project.name}">Project</h2>
+        <a class="btn secondary" th:href="@{/projects/{id}/traceability(id=${project.id})}">Gap dashboard</a>
+    </div>
+
+    <form th:action="@{/projects/{id}/matrix(id=${project.id})}" method="get" class="actions">
+        <label>Rows
+            <select name="rowType">
+                <option th:each="t : ${itemTypes}" th:value="${t}" th:text="${t}"
+                        th:selected="${t == matrix.rowType}">TYPE</option>
+            </select>
+        </label>
+        <label>Columns
+            <select name="colType">
+                <option th:each="t : ${itemTypes}" th:value="${t}" th:text="${t}"
+                        th:selected="${t == matrix.colType}">TYPE</option>
+            </select>
+        </label>
+        <button type="submit">Show matrix</button>
+    </form>
+
+    <p class="muted">
+        Cells show the trace-link type connecting a row and column item. Rows or columns with no
+        link at all are highlighted as uncovered (PLAN §4, §12).
+    </p>
+
+    <div class="matrix-scroll">
+        <table class="matrix">
+            <thead>
+            <tr>
+                <th></th>
+                <th th:each="c : ${matrix.cols}">
+                    <a th:href="@{/items/{id}(id=${c.id})}" th:text="${c.humanKey}"
+                       th:class="${matrix.uncoveredColIds.contains(c.id) ? 'uncovered' : ''}">KEY</a>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="r : ${matrix.rows}">
+                <th>
+                    <a th:href="@{/items/{id}(id=${r.id})}" th:text="${r.humanKey}"
+                       th:class="${matrix.uncoveredRowIds.contains(r.id) ? 'uncovered' : ''}">KEY</a>
+                </th>
+                <td th:each="c : ${matrix.cols}"
+                    th:with="cell=${matrix.cells.get(r.id) != null ? matrix.cells.get(r.id).get(c.id) : null}"
+                    th:class="${cell != null ? (cell.suspect ? 'hit suspect' : 'hit') : 'miss'}">
+                    <th:block th:if="${cell != null}">
+                        <span th:each="linkType : ${cell.linkTypes}" class="tag" th:text="${linkType}">TYPE</span>
+                    </th:block>
+                </td>
+            </tr>
+            <tr th:if="${matrix.rows.isEmpty()}">
+                <td colspan="2" class="muted">No <span th:text="${matrix.rowType}">TYPE</span> items in this project yet.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p class="muted" th:if="${!matrix.uncoveredRowIds.isEmpty() or !matrix.uncoveredColIds.isEmpty()}">
+        <span class="uncovered">Highlighted</span> rows/columns have no link to the other axis at all — a likely gap.
+    </p>
+</main>
+</body>
+</html>

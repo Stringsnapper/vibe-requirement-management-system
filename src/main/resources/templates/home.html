@@ -12,6 +12,8 @@
             <li th:each="p : ${projects}">
                 <span class="pill" th:text="${p.key}">KEY</span>
                 <span th:text="${p.name}">name</span>
+                <a th:href="@{/projects/{id}/traceability(id=${p.id})}">Traceability</a>
+                <a th:href="@{/projects/{id}/matrix(id=${p.id})}">Matrix</a>
             </li>
             <li th:if="${projects.isEmpty()}" class="muted">No projects yet.</li>
         </ul>
