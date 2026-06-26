@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Traceability — RMS')}"></head>
+<body>
+<header th:replace="~{fragments :: nav}"></header>
+<main class="container">
+    <div class="section-head">
+        <h2 th:text="${project.name}">Project</h2>
+        <a class="btn" th:href="@{/projects/{id}/matrix(id=${project.id})}">Open matrix</a>
+    </div>
+    <p class="muted">Live readiness scorecard — every open gap across this project's requirements (PLAN §12).</p>
+
+    <section>
+        <div class="section-head">
+            <h3>Open gaps</h3>
+            <span class="pill" th:text="${gaps.size()} + ' open'">0 open</span>
+        </div>
+        <table>
+            <thead>
+            <tr><th>Item</th><th>Type</th><th>Gap</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="g : ${gaps}">
+                <td><a th:href="@{/items/{id}(id=${g.item.id})}" th:text="${g.item.humanKey}">KEY</a></td>
+                <td th:text="${g.item.type}">TYPE</td>
+                <td class="error-text" th:text="${g.reason}">reason</td>
+            </tr>
+            <tr th:if="${gaps.isEmpty()}"><td colspan="3" class="muted">No open gaps — every requirement is covered.</td></tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+</body>
+</html>

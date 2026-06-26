@@ -72,5 +72,24 @@ h4 { margin: 0.8rem 0 0.3rem; }
 
 .info { background: #e7f6ec; border: 1px solid #b6e0c2; color: #1d6b38; padding: 0.6rem 0.9rem; border-radius: 6px; }
 .error { background: #fdeaea; border: 1px solid #f3c0c0; color: #a02020; padding: 0.6rem 0.9rem; border-radius: 6px; }
+.error-text { color: #a02020; }
 .hint { font-size: 0.85rem; color: var(--muted); }
 code { background: #eef1f5; padding: 0.1rem 0.3rem; border-radius: 4px; }
+
+/* Traceability matrix and graph (Phase 2) */
+.container-wide { max-width: 1280px; }
+.matrix-scroll, .graph-scroll { overflow-x: auto; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem; }
+table.matrix { width: auto; }
+table.matrix th, table.matrix td { white-space: nowrap; }
+table.matrix td.hit { background: #e6edff; text-align: center; }
+table.matrix td.hit.suspect { background: #fde8d8; }
+table.matrix td.miss { background: var(--card); }
+a.uncovered, th a.uncovered { color: #a02020; font-weight: 700; }
+
+svg.trace-graph { display: block; }
+svg.trace-graph .node-box { fill: #eef1f5; stroke: var(--border); stroke-width: 1.5; }
+svg.trace-graph .node-box.node-focus { fill: #e6edff; stroke: var(--accent); stroke-width: 2; }
+svg.trace-graph .node-key { font-size: 12px; font-weight: 700; fill: var(--fg); }
+svg.trace-graph .node-type { font-size: 10px; fill: var(--muted); }
+svg.trace-graph .edge { stroke: #9aa6b2; stroke-width: 1.5; }
+svg.trace-graph .edge.suspect { stroke: #d9534f; }

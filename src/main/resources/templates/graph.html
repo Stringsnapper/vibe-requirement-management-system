@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Trace graph — RMS')}"></head>
+<body>
+<header th:replace="~{fragments :: nav}"></header>
+<main class="container container-wide">
+    <div class="section-head">
+        <h2>Trace graph</h2>
+        <div class="actions">
+            <a class="btn secondary" th:href="@{/items/{id}/impact(id=${layout.focusItemId})}">Impact analysis</a>
+            <a class="btn secondary" th:href="@{/items/{id}(id=${layout.focusItemId})}">Back to item</a>
+        </div>
+    </div>
+    <p class="muted">Upstream (what the focus item depends on) to the left; downstream (what depends on it) to the right.</p>
+
+    <div class="graph-scroll">
+        <svg th:attr="viewBox='0 0 ' + ${layout.width} + ' ' + ${layout.height}"
+             th:width="${layout.width}" th:height="${layout.height}" class="trace-graph">
+            <defs>
+                <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                    <path d="M0,0 L6,3 L0,6 Z" fill="#9aa6b2"></path>
+                </marker>
+            </defs>
+            <g th:each="e : ${layout.edges}">
+                <line th:x1="${e.x1}" th:y1="${e.y1}" th:x2="${e.x2}" th:y2="${e.y2}"
+                      th:class="${e.suspect} ? 'edge suspect' : 'edge'" marker-end="url(#arrow)"></line>
+            </g>
+            <g th:each="n : ${layout.nodes}">
+                <a th:href="@{/items/{id}(id=${n.itemId})}">
+                    <rect th:x="${n.x - 85}" th:y="${n.y - 18}" width="170" height="36" rx="6"
+                          th:class="${n.focus} ? 'node-box node-focus' : 'node-box'"></rect>
+                    <text th:x="${n.x}" th:y="${n.y - 2}" text-anchor="middle" class="node-key" th:text="${n.humanKey}">KEY</text>
+                    <text th:x="${n.x}" th:y="${n.y + 13}" text-anchor="middle" class="node-type" th:text="${n.type}">TYPE</text>
+                </a>
+            </g>
+        </svg>
+    </div>
+    <p class="muted" th:if="${layout.nodes.size() == 1}">No upstream or downstream links from this item yet.</p>
+</main>
+</body>
+</html>

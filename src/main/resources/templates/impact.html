@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Impact analysis — RMS')}"></head>
+<body>
+<header th:replace="~{fragments :: nav}"></header>
+<main class="container">
+    <div class="section-head">
+        <h2>Impact analysis</h2>
+        <div class="actions">
+            <a class="btn secondary" th:href="@{/items/{id}/graph(id=${impact.focus.id})}">View graph</a>
+            <a class="btn secondary" th:href="@{/items/{id}(id=${impact.focus.id})}">Back to item</a>
+        </div>
+    </div>
+    <p class="muted">
+        The full transitive blast radius of changing <strong th:text="${impact.focus.humanKey}">KEY</strong>
+        (PLAN §4) — every item that would need a second look, and everything it depends on for context.
+    </p>
+
+    <section>
+        <h3>Downstream — re-review/re-verify if this changes</h3>
+        <ul class="pill-list">
+            <li th:each="i : ${impact.downstream}">
+                <span class="tag" th:text="${i.type}">TYPE</span>
+                <a th:href="@{/items/{id}(id=${i.id})}" th:text="${i.humanKey}">KEY</a>
+            </li>
+            <li th:if="${impact.downstream.isEmpty()}" class="muted">Nothing depends on this item downstream.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h3>Upstream — what this item depends on</h3>
+        <ul class="pill-list">
+            <li th:each="i : ${impact.upstream}">
+                <span class="tag" th:text="${i.type}">TYPE</span>
+                <a th:href="@{/items/{id}(id=${i.id})}" th:text="${i.humanKey}">KEY</a>
+            </li>
+            <li th:if="${impact.upstream.isEmpty()}" class="muted">This item does not depend on anything upstream.</li>
+        </ul>
+    </section>
+</main>
+</body>
+</html>
